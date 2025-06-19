@@ -54,7 +54,7 @@ export function DashboardTemplate({
 
   return (
     <div className="min-h-screen bg-gray-50 p-8">
-      <div className="max-w-4xl mx-auto">
+      <div className="mx-auto">
         <header className="text-center mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">{title}</h1>
           <p className="text-gray-600">{subtitle}</p>
@@ -64,41 +64,10 @@ export function DashboardTemplate({
         </header>
 
         <main className="bg-white rounded-lg shadow-sm border p-6">
-          <h2 className="text-xl font-semibold mb-4">Development Progress</h2>
-
-          {/* Progress indicators */}
-          <div className="space-y-3">
-            <div className="flex items-center space-x-3">
-              <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-bold">✓</span>
-              </div>
-              <span className="text-gray-700">
-                Type definitions (FDADevice, GraphNode, GraphEdge)
-              </span>
-            </div>
-
-            <div className="flex items-center space-x-3">
-              <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-bold">✓</span>
-              </div>
-              <span className="text-gray-700">
-                Mock data creation ({mockStats.totalDevices} devices,{" "}
-                {mockStats.rootDevices} root)
-              </span>
-            </div>
-
-            <div className="flex items-center space-x-3">
-              <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
-                <span className="text-white text-sm font-bold">✓</span>
-              </div>
-              <span className="text-gray-700">React Flow canvas setup</span>
-            </div>
-          </div>
-
           {/* Interactive Graph Canvas - Client-side component */}
           <div className="mt-8">
             <h3 className="text-lg font-semibold mb-4">
-              Interactive Device Graph (Step 3)
+              Interactive Device Graph
             </h3>
             <div className="bg-gray-50 p-4 rounded-lg">
               <GraphCanvas

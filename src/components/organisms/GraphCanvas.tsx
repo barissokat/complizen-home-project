@@ -21,6 +21,11 @@ import { FDADevice } from "@/types/fda";
 import { GraphNode, GraphEdge } from "@/types/graph";
 import { DeviceNode } from "@/components/atoms/DeviceNode";
 import { PredicateEdge } from "@/components/atoms/PredicateEdge";
+import {
+  getLayoutedElements,
+  measureLayoutPerformance,
+  shouldUseDagre,
+} from "@/lib/graph/layout-algorithms";
 
 /**
  * GraphCanvas Component
@@ -50,28 +55,30 @@ interface GraphCanvasProps {
 }
 
 /**
- * Transform FDA devices into React Flow compatible nodes
+ * Transform FDA devices into React Flow compatible nodes with Dagre hierarchical layout
+ * Uses Dagre algorithm for predicate relationship positioning
  *
  * @param devices - Array of FDA device records
  * @param selectedId - Currently selected device for highlighting
- * @returns Array of React Flow node objects
+ * @returns Array of React Flow node objects with Dagre positioning
  */
 const transformDevicesToNodes = (
   devices: FDADevice[],
   selectedId?: string,
 ): GraphNode[] => {
-  return devices.map((device, index) => {
-    // Position nodes in a simple grid layout for now
-    // Later we'll use Dagre for proper graph layout
-    const x = (index % 6) * 200;
-    const y = Math.floor(index / 6) * 150;
+  const startTime = Date.now();
 
+  // Check if Dagre is appropriate for this dataset size
+  const useDagre = shouldUseDagre(devices.length);
+
+  // Create initial nodes without positioning
+  const initialNodes: GraphNode[] = devices.map((device) => {
     const isSelected = device.kNumber === selectedId;
 
     return {
       id: device.kNumber,
       type: "deviceNode",
-      position: { x, y },
+      position: { x: 0, y: 0 }, // Will be calculated by Dagre
       data: {
         device,
         label: device.deviceName,
@@ -81,12 +88,40 @@ const transformDevicesToNodes = (
             d.predicateDevices.includes(device.kNumber),
           ).length,
           predicateCount: device.predicateDevices.length,
-          hierarchyDepth: 0, // Will be calculated properly later
+          hierarchyDepth: 0, // Will be calculated by hierarchy analysis
         },
       },
       draggable: true,
     };
   });
+
+  // Generate edges for Dagre layout calculation
+  const edges = transformDevicesToEdges(devices);
+
+  // Apply Dagre layout if appropriate, otherwise use fallback
+  let layoutedNodes: GraphNode[];
+
+  if (useDagre) {
+    layoutedNodes = getLayoutedElements(initialNodes, edges);
+    measureLayoutPerformance(devices.length, startTime);
+    console.log(
+      `✅ Dagre Layout Applied: ${devices.length} devices positioned hierarchically`,
+    );
+  } else {
+    // Fallback to grid layout for large datasets
+    console.warn(
+      `Dataset too large (${devices.length} nodes) for Dagre, using grid layout`,
+    );
+    layoutedNodes = initialNodes.map((node, index) => ({
+      ...node,
+      position: {
+        x: (index % 6) * 200,
+        y: Math.floor(index / 6) * 150,
+      },
+    }));
+  }
+
+  return layoutedNodes;
 };
 
 /**
