@@ -15,6 +15,7 @@ import type { FDADevice } from "@/types/fda";
 import { mockDevices, getMockDataStats, getRootDevices } from "@/lib/mock-data";
 import { GraphCanvas } from "@/components/organisms/GraphCanvas";
 import StoreTest from "@/components/molecules/StoreTest";
+import SearchInput from "@/components/molecules/SearchInput";
 
 interface DashboardTemplateProps {
   title: string;
@@ -65,6 +66,14 @@ export function DashboardTemplate({
         </header>
 
         <main className="bg-white rounded-lg shadow-sm border p-6">
+          {/* Search Input - Step 3 Part 2A */}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold mb-4">
+              Device Search (Step 3 - Part 2A)
+            </h3>
+            <SearchInput autoFocus={true} />
+          </div>
+
           {/* Interactive Graph Canvas - Client-side component */}
           <div className="mt-8">
             <h3 className="text-lg font-semibold mb-4">
