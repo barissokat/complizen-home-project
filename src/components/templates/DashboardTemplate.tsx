@@ -16,6 +16,7 @@ import { mockDevices, getMockDataStats, getRootDevices } from "@/lib/mock-data";
 import { GraphCanvas } from "@/components/organisms/GraphCanvas";
 import StoreTest from "@/components/molecules/StoreTest";
 import SearchInput from "@/components/molecules/SearchInput";
+import DeviceDetailsPanel from "@/components/organisms/DeviceDetailsPanel";
 import { useGraphStore } from "@/stores";
 
 interface DashboardTemplateProps {
@@ -30,7 +31,7 @@ export function DashboardTemplate({
   stepInfo,
 }: DashboardTemplateProps) {
   // Store integration - reactive to search changes
-  const { searchTerm, filteredDevices } = useGraphStore();
+  const { searchTerm, filteredDevices, setSelectedNode } = useGraphStore();
 
   // Mock data integration - client-side processing
   const mockStats = getMockDataStats();
@@ -55,10 +56,10 @@ export function DashboardTemplate({
     testNodeData,
   });
 
-  // Device selection handler - client-side interaction
+  // Device selection handler - updates store to show details panel
   const handleDeviceSelect = (device: FDADevice) => {
     console.log("Device selected:", device.kNumber, device.deviceName);
-    // Future: Update store state, show details panel, etc.
+    setSelectedNode(device.kNumber);
   };
 
   return (
@@ -81,17 +82,27 @@ export function DashboardTemplate({
             <SearchInput autoFocus={true} />
           </div>
 
-          {/* Interactive Graph Canvas - Client-side component */}
+          {/* Interactive Graph Canvas + Device Details Panel */}
           <div className="mt-8">
             <h3 className="text-lg font-semibold mb-4">
               Interactive Device Graph
             </h3>
+
+            {/* Graph Container with Panel Layout */}
             <div className="bg-gray-50 p-4 rounded-lg">
-              <GraphCanvas
-                devices={displayDevices}
-                onDeviceSelect={handleDeviceSelect}
-                height="500px"
-              />
+              <div className="flex gap-4">
+                {/* Graph Area */}
+                <div className="flex-1">
+                  <GraphCanvas
+                    devices={displayDevices}
+                    onDeviceSelect={handleDeviceSelect}
+                    height="500px"
+                  />
+                </div>
+
+                {/* Device Details Panel - Shows when device is selected */}
+                <DeviceDetailsPanel />
+              </div>
             </div>
 
             {/* Debug Info */}
