@@ -10,6 +10,7 @@
 
 "use client";
 
+import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Search, X, Loader2 } from "lucide-react";
 import { useGraphStore } from "@/stores";
@@ -70,22 +71,70 @@ export default function SearchInput({
     },
   });
 
-  // Watch for input changes (will be used for debouncing)
+  // Watch for input changes (for debounced search)
   const currentQuery = watch("query");
 
   /**
-   * Handle search form submission
-   * Updates store with search term and triggers search
+   * Debounced search effect
+   * Automatically triggers search 300ms after user stops typing
+   *
+   * Performance: Prevents excessive store updates during typing
+   * UX: Smart debounce - no loading during backspace/deletion
+   */
+  useEffect(() => {
+    // Skip debounced search if query is empty or too short
+    if (!currentQuery || currentQuery.length < 2) {
+      if (searchTerm) {
+        clearSearch(); // Clear previous search if query becomes empty
+      }
+      return;
+    }
+
+    // Skip if query hasn't changed (prevents unnecessary re-search)
+    if (currentQuery === searchTerm) {
+      return;
+    }
+
+    // Debounced search logic - 300ms delay
+    const debounceTimer = setTimeout(() => {
+      console.log("Debounced search triggered:", currentQuery);
+
+      // Light loading state - doesn't block input
+      setIsSearching(true);
+      setSearchTerm(currentQuery);
+
+      // Quick search processing (input stays enabled)
+      setTimeout(() => {
+        setIsSearching(false);
+        console.log("Search completed for:", currentQuery);
+      }, 150); // Reduced from 200ms to 150ms for faster feel
+    }, 300);
+
+    // Cleanup: Cancel previous timer if user keeps typing/deleting
+    return () => {
+      clearTimeout(debounceTimer);
+    };
+  }, [currentQuery, searchTerm, setSearchTerm, setIsSearching, clearSearch]);
+
+  /**
+   * Handle search form submission (Enter key)
+   * Immediate search without debounce delay
    */
   const onSubmit = (data: SearchFormData) => {
-    console.log("Search submitted:", data.query);
+    console.log("Immediate search submitted:", data.query);
+
+    // Skip if already searching or same term
+    if (isSearching || data.query === searchTerm) {
+      return;
+    }
+
     setSearchTerm(data.query);
     setIsSearching(true);
 
-    // Simulate search delay (will be replaced with real filtering logic)
+    // Immediate search processing
     setTimeout(() => {
       setIsSearching(false);
-    }, 500);
+    }, 200);
   };
 
   /**
@@ -117,7 +166,7 @@ export default function SearchInput({
           autoFocus={autoFocus}
           placeholder={placeholder}
           className="w-full pl-10 pr-20 py-3 h-12"
-          disabled={isSearching}
+          disabled={false}
         />
 
         {/* Loading Indicator */}
@@ -154,7 +203,8 @@ export default function SearchInput({
       {/* Development Info */}
       <div className="mt-2 text-xs text-gray-500">
         Current query: &quot;{currentQuery}&quot; | Store term: &quot;
-        {searchTerm}&quot; | Searching: {isSearching ? "Yes" : "No"}
+        {searchTerm}&quot; | Searching: {isSearching ? "Yes" : "No"} |
+        Debounced: {currentQuery !== searchTerm ? "Waiting..." : "Synced"}
       </div>
     </div>
   );
