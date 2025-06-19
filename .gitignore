@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# not needed
+/.cursor
+/notes
+/notes/project.md
+README.md
