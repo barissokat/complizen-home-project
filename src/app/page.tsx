@@ -16,7 +16,7 @@ export default function Home() {
     <DashboardTemplate
       title="FDA Device Predicate Graph"
       subtitle="Interactive visualization of 510(k) predicate relationships"
-      stepInfo={`Step 2: Mock Data - ${mockStats.totalDevices} devices loaded`}
+      stepInfo={`${mockStats.totalDevices} devices loaded`}
     />
   );
 }

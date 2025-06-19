@@ -14,6 +14,7 @@ import type { DeviceNodeData } from "@/types/graph";
 import type { FDADevice } from "@/types/fda";
 import { mockDevices, getMockDataStats, getRootDevices } from "@/lib/mock-data";
 import { GraphCanvas } from "@/components/organisms/GraphCanvas";
+import StoreTest from "@/components/molecules/StoreTest";
 
 interface DashboardTemplateProps {
   title: string;
@@ -76,6 +77,12 @@ export function DashboardTemplate({
                 height="500px"
               />
             </div>
+          </div>
+
+          {/* TEMPORARY: Store Test Panel */}
+          <div className="mt-8">
+            <h3 className="text-lg font-semibold mb-4">Zustand Store Test</h3>
+            <StoreTest />
           </div>
 
           {/* Statistics and sample data display */}
