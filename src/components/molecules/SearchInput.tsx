@@ -53,9 +53,9 @@ export default function SearchInput({
   const {
     searchTerm,
     isSearching,
-    setSearchTerm,
     setIsSearching,
     clearSearch,
+    performSearch,
   } = useGraphStore();
 
   // React Hook Form setup
@@ -101,7 +101,7 @@ export default function SearchInput({
 
       // Light loading state - doesn't block input
       setIsSearching(true);
-      setSearchTerm(currentQuery);
+      performSearch(currentQuery);
 
       // Quick search processing (input stays enabled)
       setTimeout(() => {
@@ -114,7 +114,7 @@ export default function SearchInput({
     return () => {
       clearTimeout(debounceTimer);
     };
-  }, [currentQuery, searchTerm, setSearchTerm, setIsSearching, clearSearch]);
+  }, [currentQuery, searchTerm, performSearch, setIsSearching, clearSearch]);
 
   /**
    * Handle search form submission (Enter key)
@@ -128,7 +128,7 @@ export default function SearchInput({
       return;
     }
 
-    setSearchTerm(data.query);
+    performSearch(data.query);
     setIsSearching(true);
 
     // Immediate search processing

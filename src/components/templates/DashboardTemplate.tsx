@@ -16,6 +16,7 @@ import { mockDevices, getMockDataStats, getRootDevices } from "@/lib/mock-data";
 import { GraphCanvas } from "@/components/organisms/GraphCanvas";
 import StoreTest from "@/components/molecules/StoreTest";
 import SearchInput from "@/components/molecules/SearchInput";
+import { useGraphStore } from "@/stores";
 
 interface DashboardTemplateProps {
   title: string;
@@ -28,10 +29,16 @@ export function DashboardTemplate({
   subtitle,
   stepInfo,
 }: DashboardTemplateProps) {
+  // Store integration - reactive to search changes
+  const { searchTerm, filteredDevices } = useGraphStore();
+
   // Mock data integration - client-side processing
   const mockStats = getMockDataStats();
   const rootDevices = getRootDevices();
   const sampleDevice = mockDevices[0]; // CardioFlow Balloon Catheter
+
+  // Get display devices - REACTIVE to store changes
+  const displayDevices = searchTerm ? filteredDevices : mockDevices;
 
   const testNodeData: DeviceNodeData = {
     label: sampleDevice.deviceName,
@@ -81,10 +88,22 @@ export function DashboardTemplate({
             </h3>
             <div className="bg-gray-50 p-4 rounded-lg">
               <GraphCanvas
-                devices={mockDevices}
+                devices={displayDevices}
                 onDeviceSelect={handleDeviceSelect}
                 height="500px"
               />
+            </div>
+
+            {/* Debug Info */}
+            <div className="mt-2 text-xs text-gray-500">
+              Showing {displayDevices.length} of {mockDevices.length} devices
+              {searchTerm && (
+                <span>
+                  {" "}
+                  | Search: &quot;{searchTerm}&quot; | Filtered:{" "}
+                  {filteredDevices.length} results
+                </span>
+              )}
             </div>
           </div>
 

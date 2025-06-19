@@ -5,7 +5,7 @@
  * Simplifies component imports and maintains clean architecture
  */
 
-export { useGraphStore } from "./graph-store";
+export { useGraphStore, getDisplayDevices } from "./graph-store";
 
 // Future stores can be exported here:
 // export { useUIStore } from './ui-store';

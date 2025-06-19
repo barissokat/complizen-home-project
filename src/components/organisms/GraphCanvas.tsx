@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useMemo, useEffect } from "react";
 import {
   ReactFlow,
   Node,
@@ -187,8 +187,18 @@ export const GraphCanvas: React.FC<GraphCanvasProps> = ({
   );
 
   // React Flow state management
-  const [nodes, , onNodesChange] = useNodesState(initialNodes);
+  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
+
+  // Update nodes and edges when devices prop changes (for filtering)
+  useEffect(() => {
+    console.log(
+      "GraphCanvas: Updating nodes/edges due to devices change",
+      devices.length,
+    );
+    setNodes(initialNodes);
+    setEdges(initialEdges);
+  }, [initialNodes, initialEdges, setNodes, setEdges, devices.length]);
 
   // Handle new connections (not used for our read-only graph, but required by React Flow)
   const onConnect = useCallback(

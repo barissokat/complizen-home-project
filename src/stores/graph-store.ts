@@ -9,6 +9,7 @@
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import type { FDADevice } from "@/types/fda";
+import { mockDevices } from "@/lib/mock-data";
 
 /**
  * Graph store state interface
@@ -27,11 +28,41 @@ interface GraphStore {
   setFilteredDevices: (devices: FDADevice[]) => void;
   setIsSearching: (loading: boolean) => void;
 
+  // Filtering actions
+  performSearch: (searchTerm: string) => void;
+
   // Utility actions
   clearSelection: () => void;
   clearSearch: () => void;
   resetStore: () => void;
 }
+
+/**
+ * Device filtering utility function
+ * Searches through K-number, device name, and manufacturer
+ *
+ * Performance: Case-insensitive search with multiple field matching
+ * Algorithm: Includes-based filtering for partial matches
+ */
+const filterDevices = (
+  devices: FDADevice[],
+  searchTerm: string,
+): FDADevice[] => {
+  if (!searchTerm || searchTerm.length < 2) {
+    return devices; // Return all devices if no search term
+  }
+
+  const lowerSearchTerm = searchTerm.toLowerCase();
+
+  return devices.filter(
+    (device) =>
+      device.kNumber.toLowerCase().includes(lowerSearchTerm) ||
+      device.deviceName.toLowerCase().includes(lowerSearchTerm) ||
+      device.manufacturer.toLowerCase().includes(lowerSearchTerm) ||
+      device.productClass.toLowerCase().includes(lowerSearchTerm) ||
+      (device.panelType?.toLowerCase().includes(lowerSearchTerm) ?? false),
+  );
+};
 
 /**
  * Initial state values
@@ -72,6 +103,19 @@ export const useGraphStore = create<GraphStore>()(
       setIsSearching: (loading) =>
         set({ isSearching: loading }, false, "graph/setIsSearching"),
 
+      // Filtering actions
+      performSearch: (searchTerm) => {
+        const filtered = filterDevices(mockDevices, searchTerm);
+        set(
+          {
+            searchTerm,
+            filteredDevices: filtered,
+          },
+          false,
+          "graph/performSearch",
+        );
+      },
+
       // Utility actions for cleanup
       clearSelection: () =>
         set({ selectedNodeId: null }, false, "graph/clearSelection"),
@@ -95,3 +139,12 @@ export const useGraphStore = create<GraphStore>()(
     },
   ),
 );
+
+/**
+ * Helper function to get devices for display
+ * Returns filtered devices if search is active, otherwise all devices
+ */
+export const getDisplayDevices = (): FDADevice[] => {
+  const { searchTerm, filteredDevices } = useGraphStore.getState();
+  return searchTerm ? filteredDevices : mockDevices;
+};
