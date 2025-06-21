@@ -11,7 +11,8 @@ import {
   getDataSourceDescription,
   getEnvironmentConfig,
 } from "@/lib/config/environment";
-import type { FDADevice } from "@/types/fda";
+import { fdaAPIClient } from "@/lib/api/fda-api";
+import type { FDADevice, DeviceFilters } from "@/types/fda";
 
 export interface DataProviderResponse {
   devices: FDADevice[];
@@ -64,9 +65,22 @@ export class DataProvider {
 
     try {
       if (shouldUseApiData) {
-        // TODO: Implement API data fetching in next sub-step
-        // For now, return mock data with 'api' source indication
-        return this.getMockDevicesAsAPI(params);
+        // Use real FDA API client
+        const filters: DeviceFilters = {
+          searchTerm: params.search,
+          productClass: params.productClass ? [params.productClass] : undefined,
+          limit: params.limit,
+        };
+
+        const apiResponse = await fdaAPIClient.fetchDevices(filters);
+
+        return {
+          devices: apiResponse.devices,
+          source: apiResponse.source as "api" | "mock",
+          timestamp: Date.now(),
+          totalCount: apiResponse.total,
+          error: apiResponse.error,
+        };
       } else {
         return this.getMockDevices(params);
       }
@@ -196,10 +210,17 @@ export class DataProvider {
    * @returns Device data or null if not found
    */
   public async getDeviceByKNumber(kNumber: string): Promise<FDADevice | null> {
-    const response = await this.getDevices();
-    return (
-      response.devices.find((device) => device.kNumber === kNumber) || null
-    );
+    const shouldUseApiData = shouldUseAPI();
+
+    if (shouldUseApiData) {
+      const apiResponse = await fdaAPIClient.getDeviceByKNumber(kNumber);
+      return apiResponse.device;
+    } else {
+      const response = await this.getDevices();
+      return (
+        response.devices.find((device) => device.kNumber === kNumber) || null
+      );
+    }
   }
 
   /**

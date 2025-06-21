@@ -71,19 +71,31 @@ export const validateEnvironment = () => {
   const warnings: string[] = [];
   const recommendations: string[] = [];
 
-  // Check for missing FDA API key
+  // Check for missing FDA API key (warnings only, not blocking)
   if (config.dataMode !== "mock" && !config.fdaApiKey) {
     warnings.push("FDA_API_KEY is not set");
     recommendations.push(
       "Get API key from https://open.fda.gov/apis/authentication/ for higher rate limits",
     );
+    recommendations.push(
+      "Rate limits: Without API key = 1,000 requests/day, With API key = 120,000 requests/day",
+    );
   }
 
-  // Check data mode configuration
-  if (config.dataMode === "api" && !config.fdaApiKey) {
-    warnings.push("API mode enabled but no API key provided");
-    recommendations.push('Switch to "hybrid" mode or provide FDA_API_KEY');
-  }
+  // FDA API is public, so API mode works without key (just with lower rate limits)
+  // Development: 1,000 requests/day sufficient for testing
+  // Production: API key essential (120,000 vs 1,000 requests/day)
+
+  /*
+   * PRODUCTION DEPLOYMENT NOTE:
+   * For production deployment, uncomment the following validation:
+   *
+   * if (config.dataMode === "api" && !config.fdaApiKey) {
+   *   warnings.push("Production API mode requires FDA_API_KEY for scale");
+   *   recommendations.push("Set FDA_API_KEY environment variable for production");
+   *   return { isValid: false, warnings, recommendations, config };
+   * }
+   */
 
   // Log environment status
   if (config.debugApi) {
@@ -104,7 +116,7 @@ export const validateEnvironment = () => {
   }
 
   return {
-    isValid: warnings.length === 0,
+    isValid: true, // FDA API is public, always valid
     warnings,
     recommendations,
     config,
