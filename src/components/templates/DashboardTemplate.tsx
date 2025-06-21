@@ -17,6 +17,7 @@ import { GraphCanvas } from "@/components/organisms/GraphCanvas";
 import StoreTest from "@/components/molecules/StoreTest";
 import SearchInput from "@/components/molecules/SearchInput";
 import DeviceDetailsPanel from "@/components/organisms/DeviceDetailsPanel";
+import { DataSourceIndicator } from "@/components/molecules/DataSourceIndicator";
 import { useGraphStore } from "@/stores";
 import {
   Search,
@@ -420,6 +421,9 @@ export function DashboardTemplate({
           </div>
         </div>
       </div>
+
+      {/* Data Source Indicator - Development Tool */}
+      <DataSourceIndicator />
     </div>
   );
 }
