@@ -18,7 +18,9 @@ import StoreTest from "@/components/molecules/StoreTest";
 import SearchInput from "@/components/molecules/SearchInput";
 import DeviceDetailsPanel from "@/components/organisms/DeviceDetailsPanel";
 import { DataSourceIndicator } from "@/components/molecules/DataSourceIndicator";
+import { LoadingSpinner } from "@/components/atoms/LoadingSpinner";
 import { useGraphStore } from "@/stores";
+import { useFDADevices, useDeviceSearch } from "@/lib/hooks/use-fda-devices";
 import {
   Search,
   TrendingUp,
@@ -46,13 +48,44 @@ export function DashboardTemplate({
   // Store integration - reactive to search changes
   const { searchTerm, filteredDevices, setSelectedNode } = useGraphStore();
 
-  // Mock data integration - client-side processing
+  // FDA Data Hook Integration - with environment-based switching
+  const {
+    devices: hookDevices,
+    isLoading,
+    isError,
+    error,
+    isFromAPI,
+    totalCount,
+    isFetching,
+  } = useFDADevices();
+
+  // Search Hook Integration - for real-time search
+  const { devices: searchResults, isLoading: isSearching } = useDeviceSearch(
+    searchTerm,
+    {
+      enabled: searchTerm.length >= 2,
+    },
+  );
+
+  // Data Source Logic - prioritize hook data over mock data
+  const displayDevices = (() => {
+    if (searchTerm && searchTerm.length >= 2) {
+      // Use search results when actively searching
+      return isSearching ? filteredDevices : searchResults;
+    } else {
+      // Use hook devices (API or mock) when not searching
+      return isLoading ? mockDevices : hookDevices;
+    }
+  })();
+
+  // Stats calculation - adapt to data source
   const mockStats = getMockDataStats();
   const rootDevices = getRootDevices();
-  const sampleDevice = mockDevices[0]; // CardioFlow Balloon Catheter
+  const sampleDevice = displayDevices[0] || mockDevices[0]; // Fallback to mock if no data
 
-  // Get display devices - REACTIVE to store changes
-  const displayDevices = searchTerm ? filteredDevices : mockDevices;
+  // Loading and Error UI state
+  const showLoadingState = isLoading && !isError;
+  const showErrorState = isError && !isLoading;
 
   const testNodeData: DeviceNodeData = {
     label: sampleDevice.deviceName,
@@ -203,20 +236,48 @@ export function DashboardTemplate({
           </div>
           <SearchInput autoFocus={true} />
 
-          {/* Search Results Info */}
+          {/* Search Results Info with Loading States */}
           <div className="mt-4 flex items-center justify-between text-sm">
             <div className="flex items-center space-x-2 text-slate-600">
-              <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+              <div
+                className={`w-2 h-2 rounded-full ${
+                  showLoadingState
+                    ? "bg-yellow-400 animate-pulse"
+                    : showErrorState
+                      ? "bg-red-400"
+                      : isFromAPI
+                        ? "bg-blue-400"
+                        : "bg-emerald-400"
+                }`}
+              ></div>
               <span>
-                Showing {displayDevices.length} of {mockDevices.length} devices
+                Showing {displayDevices.length} of{" "}
+                {totalCount || mockDevices.length} devices
+                {isFetching && (
+                  <span className="ml-1 text-xs">(updating...)</span>
+                )}
               </span>
             </div>
-            {searchTerm && (
-              <div className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
-                Search: &quot;{searchTerm}&quot; • {filteredDevices.length}{" "}
-                results
-              </div>
-            )}
+            <div className="flex items-center space-x-2">
+              {showErrorState && (
+                <div className="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+                  Error: {error?.message || "Failed to load data"}
+                </div>
+              )}
+              {searchTerm && (
+                <div className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                  Search: &quot;{searchTerm}&quot; •{" "}
+                  {isSearching
+                    ? "searching..."
+                    : `${displayDevices.length} results`}
+                </div>
+              )}
+              {isFromAPI && (
+                <div className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                  Live FDA Data
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
@@ -244,12 +305,22 @@ export function DashboardTemplate({
             <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-lg p-4">
               <div className="flex gap-6">
                 {/* Graph Area */}
-                <div className="flex-1">
-                  <GraphCanvas
-                    devices={displayDevices}
-                    onDeviceSelect={handleDeviceSelect}
-                    height="500px"
-                  />
+                <div className="flex-1 relative">
+                  {showLoadingState ? (
+                    <div className="h-[500px] flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 rounded-lg border">
+                      <LoadingSpinner
+                        size="lg"
+                        text="Loading FDA device data..."
+                        className="py-8"
+                      />
+                    </div>
+                  ) : (
+                    <GraphCanvas
+                      devices={displayDevices}
+                      onDeviceSelect={handleDeviceSelect}
+                      height="500px"
+                    />
+                  )}
                 </div>
 
                 {/* Device Details Panel */}
