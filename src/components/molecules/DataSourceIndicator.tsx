@@ -83,25 +83,23 @@ export const DataSourceIndicator = () => {
   };
 
   return (
-    <div className="fixed top-4 right-4 z-50">
-      <div
-        className={`
+    <div
+      className={`
         px-3 py-2 rounded-lg border text-xs font-medium
         ${getSourceColor()}
         shadow-sm backdrop-blur-sm
       `}
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-sm">{getSourceIcon()}</span>
-          <div>
-            <div className="font-semibold">
-              Data Source: {sourceInfo.mode.toUpperCase()}
-            </div>
-            <div className="text-xs opacity-75">{sourceInfo.description}</div>
-            <div className="text-xs opacity-60 mt-1">
-              {sourceInfo.mockDataStats.totalDevices} devices loaded
-              {sourceInfo.config.hasApiKey ? " • API Key: ✓" : " • API Key: ✗"}
-            </div>
+    >
+      <div className="flex items-center gap-2">
+        <span className="text-sm">{getSourceIcon()}</span>
+        <div>
+          <div className="font-semibold">
+            Data Source: {sourceInfo.mode.toUpperCase()}
+          </div>
+          <div className="text-xs opacity-75">{sourceInfo.description}</div>
+          <div className="text-xs opacity-60 mt-1">
+            {sourceInfo.mockDataStats.totalDevices} devices loaded
+            {sourceInfo.config.hasApiKey ? " • API Key: ✓" : " • API Key: ✗"}
           </div>
         </div>
       </div>

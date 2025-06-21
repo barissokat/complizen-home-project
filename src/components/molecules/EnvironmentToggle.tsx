@@ -77,7 +77,7 @@ export const EnvironmentToggle: React.FC = () => {
   };
 
   return (
-    <div className="fixed bottom-4 left-4 z-50 bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-sm">
+    <div className="bg-white rounded-lg shadow-lg border border-gray-200 p-4 max-w-sm">
       <div className="flex items-center space-x-2 mb-3">
         <Settings className="w-5 h-5 text-gray-600" />
         <h3 className="font-semibold text-gray-900">Development Tools</h3>

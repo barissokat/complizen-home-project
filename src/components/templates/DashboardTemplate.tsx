@@ -19,7 +19,8 @@ import SearchInput from "@/components/molecules/SearchInput";
 import DeviceDetailsPanel from "@/components/organisms/DeviceDetailsPanel";
 import { DataSourceIndicator } from "@/components/molecules/DataSourceIndicator";
 import { EnvironmentToggle } from "@/components/molecules/EnvironmentToggle";
-import { LoadingSpinner } from "@/components/atoms/LoadingSpinner";
+import { ErrorTester } from "@/components/molecules/ErrorTester";
+import { SkeletonPresets } from "@/components/atoms/SkeletonLoader";
 import { useGraphStore } from "@/stores";
 import { useFDADevices, useDeviceSearch } from "@/lib/hooks/use-fda-devices";
 import {
@@ -308,12 +309,8 @@ export function DashboardTemplate({
                 {/* Graph Area */}
                 <div className="flex-1 relative">
                   {showLoadingState ? (
-                    <div className="h-[500px] flex items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 rounded-lg border">
-                      <LoadingSpinner
-                        size="lg"
-                        text="Loading FDA device data..."
-                        className="py-8"
-                      />
+                    <div className="h-[500px] bg-gradient-to-br from-slate-50 to-blue-50 rounded-lg border overflow-hidden">
+                      <SkeletonPresets.GraphCanvas />
                     </div>
                   ) : (
                     <GraphCanvas
@@ -494,9 +491,12 @@ export function DashboardTemplate({
         </div>
       </div>
 
-      {/* Development Tools */}
-      <DataSourceIndicator />
-      <EnvironmentToggle />
+      {/* Development Tools - Left Side Stack */}
+      <div className="fixed bottom-2 right-1 z-50 space-y-4">
+        <DataSourceIndicator />
+        <EnvironmentToggle />
+        <ErrorTester />
+      </div>
     </div>
   );
 }
