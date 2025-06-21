@@ -18,6 +18,7 @@ import StoreTest from "@/components/molecules/StoreTest";
 import SearchInput from "@/components/molecules/SearchInput";
 import DeviceDetailsPanel from "@/components/organisms/DeviceDetailsPanel";
 import { DataSourceIndicator } from "@/components/molecules/DataSourceIndicator";
+import { EnvironmentToggle } from "@/components/molecules/EnvironmentToggle";
 import { LoadingSpinner } from "@/components/atoms/LoadingSpinner";
 import { useGraphStore } from "@/stores";
 import { useFDADevices, useDeviceSearch } from "@/lib/hooks/use-fda-devices";
@@ -493,8 +494,9 @@ export function DashboardTemplate({
         </div>
       </div>
 
-      {/* Data Source Indicator - Development Tool */}
+      {/* Development Tools */}
       <DataSourceIndicator />
+      <EnvironmentToggle />
     </div>
   );
 }

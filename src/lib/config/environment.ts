@@ -37,13 +37,37 @@ const DEFAULT_CONFIG: EnvironmentConfig = {
  * @returns Validated environment configuration with fallbacks
  */
 export const getEnvironmentConfig = (): EnvironmentConfig => {
+  // Start with environment variable or default
+  let dataMode =
+    (process.env.NEXT_PUBLIC_DATA_MODE as DataMode) || DEFAULT_CONFIG.dataMode;
+
+  // Check for localStorage override (development only, client-side only)
+  // This will be handled by the EnvironmentToggle component after hydration
+  try {
+    if (
+      typeof window !== "undefined" &&
+      process.env.NODE_ENV === "development"
+    ) {
+      const localStorageMode = localStorage.getItem(
+        "FDA_DATA_MODE",
+      ) as DataMode;
+      if (
+        localStorageMode &&
+        ["mock", "api", "hybrid"].includes(localStorageMode)
+      ) {
+        dataMode = localStorageMode;
+      }
+    }
+  } catch {
+    // Ignore localStorage errors during SSR
+    console.warn("localStorage not available during SSR");
+  }
+
   // Get environment variables with fallbacks
   const config: EnvironmentConfig = {
     fdaApiBaseUrl: process.env.FDA_API_BASE_URL || DEFAULT_CONFIG.fdaApiBaseUrl,
     fdaApiKey: process.env.FDA_API_KEY || DEFAULT_CONFIG.fdaApiKey,
-    dataMode:
-      (process.env.NEXT_PUBLIC_DATA_MODE as DataMode) ||
-      DEFAULT_CONFIG.dataMode,
+    dataMode,
     rateLimit: parseInt(process.env.FDA_API_RATE_LIMIT || "1000"),
     cacheTime: parseInt(process.env.FDA_API_CACHE_TIME || "5"),
     debugApi: process.env.NEXT_PUBLIC_DEBUG_API === "true",
