@@ -13,6 +13,7 @@
 import { X } from "lucide-react";
 import { useGraphStore } from "@/stores";
 import { Button } from "@/components/atoms/ui/button";
+import { useFDADevices, useDeviceSearch } from "@/lib/hooks/use-fda-devices";
 import { mockDevices } from "@/lib/mock-data";
 
 /**
@@ -26,11 +27,33 @@ import { mockDevices } from "@/lib/mock-data";
  */
 export default function DeviceDetailsPanel() {
   // Store integration - reactive to selected device
-  const { selectedNodeId, clearSelection } = useGraphStore();
+  const { selectedNodeId, clearSelection, searchTerm } = useGraphStore();
 
-  // Find selected device from mock data
+  // FDA Data Hook Integration - same logic as DashboardTemplate
+  const { devices: hookDevices, isLoading } = useFDADevices();
+
+  // Search Hook Integration - for real-time search
+  const { devices: searchResults, isLoading: isSearching } = useDeviceSearch(
+    searchTerm,
+    {
+      enabled: searchTerm.length >= 2,
+    },
+  );
+
+  // Data Source Logic - same as DashboardTemplate to ensure consistency
+  const displayDevices = (() => {
+    if (searchTerm && searchTerm.length >= 2) {
+      // Use search results when actively searching
+      return isSearching ? mockDevices : searchResults;
+    } else {
+      // Use hook devices (API or mock) when not searching
+      return isLoading ? mockDevices : hookDevices;
+    }
+  })();
+
+  // Find selected device from current display devices
   const selectedDevice = selectedNodeId
-    ? mockDevices.find((device) => device.kNumber === selectedNodeId)
+    ? displayDevices.find((device) => device.kNumber === selectedNodeId)
     : null;
 
   // Don't render if no device selected
@@ -206,7 +229,7 @@ export default function DeviceDetailsPanel() {
             {selectedDevice.predicateDevices.length > 0 ? (
               <div className="space-y-2">
                 {selectedDevice.predicateDevices.map((predicateKNumber) => {
-                  const predicateDevice = mockDevices.find(
+                  const predicateDevice = displayDevices.find(
                     (d) => d.kNumber === predicateKNumber,
                   );
                   return (
